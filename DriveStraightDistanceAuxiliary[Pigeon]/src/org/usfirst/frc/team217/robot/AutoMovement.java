@@ -49,7 +49,6 @@ public class AutoMovement {
 		_rightMaster.setInverted(rightInverted);
 		_rightMaster.setSensorPhase(rightSensorPhase);
 
-		
 		_rightMaster.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
 		_leftFollower.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
 
@@ -68,7 +67,7 @@ public class AutoMovement {
 	/**
 	 * 
 	 */
-	public void configPosPIDF(double _kP, double _kI, double _kD, double _kF, double _kIzone, double _kPeakOutput)) {
+	public void configPosPIDF(double _kP, double _kI, double _kD, double _kF, double _kIzone, double _kPeakOutput) {
 		// to do change kp gains to motuion porofile 
 		/* FPID Gains for distance servo */
 		_rightMaster.config_kP(Constants.kSlot_Distanc, Constants.kGains_Distanc.kP, Constants.kTimeoutMs);
@@ -82,37 +81,38 @@ public class AutoMovement {
 		
 	}
 
+
 	/**
-	 * Angle pidf is aux pid on the auxilarry pid slot
-	 *  */
-	public void configAnglePIDF(double _kP, double _kI, double _kD, double _kF, double _kIzone, double _kPeakOutput)) {
+	 * @param _kP
+	 * @param _kI
+	 * @param _kD
+	 * @param _kF
+	 * @param _kIzone
+	 * @param _kPeakOutput
+	 * 
+	 * angle pid controller at aux pid sensor
+	 */
+	public void configAnglePIDF(double _kP, double _kI, double _kD, double _kF, double _kIzone, double _kPeakOutput) {
 		/* FPID Gains for turn servo */
 		_rightMaster.config_kP(Constants.kSlot_Turning, _kP, Constants.kTimeoutMs);
 		_rightMaster.config_kI(Constants.kSlot_Turning, _kI, Constants.kTimeoutMs);
 		_rightMaster.config_kD(Constants.kSlot_Turning, _kD, Constants.kTimeoutMs);
 		_rightMaster.config_kF(Constants.kSlot_Turning, _kF, Constants.kTimeoutMs);
-		_rightMaster.config_IntegralZone(Constants.kSlot_Turning, (int) _kIzone,
-				Constants.kTimeoutMs);
-		
+		_rightMaster.config_IntegralZone(Constants.kSlot_Turning, (int) _kIzone,Constants.kTimeoutMs);
 		_rightMaster.configClosedLoopPeakOutput(Constants.kSlot_Turning, _kPeakOutput,Constants.kTimeoutMs);
-
-		
 	}
 	
 	/**
 	 * @param auxPidPolarity
-	 *  * configAuxPIDPolarity(boolean invert, int timeoutMs) false means talon's local
-		 * output is PID0 + PID1, and other side Talon is PID0 - PID1 true means talon's
-		 * local output is PID0 - PID1, and other side Talon is PID0 + PID1
+	 * configAuxPIDPolarity(boolean invert, int timeoutMs) false means talon's local
+	* output is PID0 + PID1, and other side Talon is PID0 - PID1 true means talon's
+	 * local output is PID0 - PID1, and other side Talon is PID0 + PID1
 	 * @param _closeLoppTimeMs
 	 * 
-	 * 	 * 1ms per loop. PID loop can be slowed down if need be. For example, - if
-		 * sensor updates are too slow - sensor deltas are very small per update, so
-		 * derivative error never gets large enough to be useful. - sensor movement is
-		 * very slow causing the derivative error to be near zero.
-		 * 
-		 * 		
-		 * 
+	 *1ms per loop. PID loop can be slowed down if need be. For example, - if
+	 *  sensor updates are too slow - sensor deltas are very small per update, so
+	 * derivative error never gets large enough to be useful. - sensor movement is
+	 * very slow causing the derivative error to be near zero.	
 	 */
 	public void configLoopPeramiters(boolean auxPidPolarity, int _closeLoppTimeMs) {
 
@@ -212,7 +212,7 @@ public class AutoMovement {
 				Constants.kTimeoutMs);
 		
 		
-		/* Initialize */
+	
 		_firstCall = true;
 		_state = false;
 		zeroSensors();
@@ -236,14 +236,16 @@ public class AutoMovement {
 	 */
 	public void autoPeriodicSetPoint() {
 
-		/* Calculate targets from gamepad inputs */
-		double target_sensorUnits = robotPostion * Constants.kSensorUnitsPerRotation * Constants.kRotationsToTravel;
+	
+		
+		// TODO need to make converstion from inches to encoder ticks
+		double targetSesnorUnits = robotPostion * Constants.kSensorUnitsPerRotation * Constants.kRotationsToTravel;
 		double target_turn = _robotTargetAngle;
 		/*
 		 * Configured for motion magic on Quad Encoders' Sum and Auxiliary PID
 		 * on Pigeon's Yaw
 		 */
-		_rightMaster.set(ControlMode.MotionMagic, target_sensorUnits, DemandType.AuxPID, target_turn);
+		_rightMaster.set(ControlMode.MotionMagic, targetSesnorUnits, DemandType.AuxPID, target_turn);
 		_leftFollower.follow(_rightMaster, FollowerType.AuxOutput1);
 	}
 
