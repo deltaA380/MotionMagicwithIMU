@@ -12,10 +12,12 @@ import com.ctre.phoenix.motorcontrol.StatusFrame;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
-import edu.wpi.first.wpilibj.Joystick;
 
 public class AutoMovement {
+	
 	// hardware implementation all pins are theortical
+	// could flexable add more tallons 
+	// I am aasumeing that the driveTrain is in a tank format 
 	TalonSRX _leftMaster = new TalonSRX(2);
 	TalonSRX _rightMaster = new TalonSRX(1);
 	PigeonIMU _pidgey = new PigeonIMU(3);
@@ -43,10 +45,13 @@ public class AutoMovement {
 		 */
 		_leftMaster.configPeakOutputForward(+1.0, Constants.kTimeoutMs);
 		_leftMaster.configPeakOutputReverse(-1.0, Constants.kTimeoutMs);
-
+		
 		_rightMaster.configPeakOutputForward(+1.0, Constants.kTimeoutMs);
 		_rightMaster.configPeakOutputReverse(-1.0, Constants.kTimeoutMs);
 
+		
+		
+		// to do change kp gains to motuion porofile 
 		/* FPID Gains for distance servo */
 		_rightMaster.config_kP(Constants.kSlot_Distanc, Constants.kGains_Distanc.kP, Constants.kTimeoutMs);
 		_rightMaster.config_kI(Constants.kSlot_Distanc, Constants.kGains_Distanc.kI, Constants.kTimeoutMs);
@@ -98,6 +103,9 @@ public class AutoMovement {
 
 	}
 
+	/**
+	 * 
+	 */
 	public void autoMovementInit() {
 		/* Disable all motor controllers */
 		_rightMaster.set(ControlMode.PercentOutput, 0);
@@ -106,6 +114,8 @@ public class AutoMovement {
 		/* Set Neutral Mode */
 		_leftMaster.setNeutralMode(NeutralMode.Brake);
 		_rightMaster.setNeutralMode(NeutralMode.Brake);
+		
+		
 
 		/** Feedback Sensor Configuration */
 
@@ -121,9 +131,10 @@ public class AutoMovement {
 		_rightMaster.configRemoteFeedbackFilter(_leftMaster.getDeviceID(), // Device ID of Source
 				RemoteSensorSource.TalonSRX_SelectedSensor, // Remote Feedback Source
 				Constants.REMOTE_0, // Source number [0, 1]
-
 				Constants.kTimeoutMs); // Configuration Timeout
 
+		
+		
 		/* Configure the Pigeon IMU to the other Remote Slot on the Right Talon */
 		_rightMaster.configRemoteFeedbackFilter(_pidgey.getDeviceID(), RemoteSensorSource.Pigeon_Yaw,
 				Constants.REMOTE_1, Constants.kTimeoutMs);
@@ -175,13 +186,21 @@ public class AutoMovement {
 
 	}
 
+	/**
+	 * @param _postion
+	 * @param turnYaw
+	 */
 	public void setSetpoints(double _postion, double turnYaw) {
 		_targetAngle= turnYaw;
 		postion = _postion;
 	}
 
+	
+	
+	/**
+	 * manGages motion magic during auto periood
+	 */
 	public void autoPeriodicSetPoint() {
-		/* Gamepad processing */
 	
 
 		/* Calculate targets from gamepad inputs */
@@ -189,7 +208,7 @@ public class AutoMovement {
 		double target_turn = _targetAngle;
 
 		/*
-		 * Configured for Position Closed loop on Quad Encoders' Sum and Auxiliary PID
+		 * Configured for motion magic on Quad Encoders' Sum and Auxiliary PID
 		 * on Pigeon's Yaw
 		 */
 		_rightMaster.set(ControlMode.MotionMagic, target_sensorUnits, DemandType.AuxPID, target_turn);
