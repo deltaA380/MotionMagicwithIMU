@@ -2,7 +2,9 @@ package org.usfirst.frc.team217.robot;
 
 import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.FollowerType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.RemoteSensorSource;
 import com.ctre.phoenix.motorcontrol.SensorTerm;
@@ -30,58 +32,7 @@ public class AutoMovement {
 	
 	public AutoMovement() {
 		
-		/* Disable all motor controllers */
-		_rightMaster.set(ControlMode.PercentOutput, 0);
-		_leftMaster.set(ControlMode.PercentOutput, 0);
 		
-		/* Set Neutral Mode */
-		_leftMaster.setNeutralMode(NeutralMode.Brake);
-		_rightMaster.setNeutralMode(NeutralMode.Brake);
-		
-		/** Feedback Sensor Configuration */
-		
-		/* Configure the left Talon's selected sensor as local QuadEncoder */
-		_leftMaster.configSelectedFeedbackSensor(	FeedbackDevice.QuadEncoder,				// Local Feedback Source
-													Constants.PID_PRIMARY,					// PID Slot for Source [0, 1]
-													Constants.kTimeoutMs);					// Configuration Timeout
-
-		/* Configure the Remote Talon's selected sensor as a remote sensor for the right Talon */
-		_rightMaster.configRemoteFeedbackFilter(_leftMaster.getDeviceID(),					// Device ID of Source
-												RemoteSensorSource.TalonSRX_SelectedSensor,	// Remote Feedback Source
-												Constants.REMOTE_0,							// Source number [0, 1]
-					
-												
-												Constants.kTimeoutMs);						// Configuration Timeout
-		
-		/* Configure the Pigeon IMU to the other Remote Slot on the Right Talon */
-		_rightMaster.configRemoteFeedbackFilter(_pidgey.getDeviceID(),
-												RemoteSensorSource.Pigeon_Yaw,
-												Constants.REMOTE_1,	
-												Constants.kTimeoutMs);
-		
-		/* Setup Sum signal to be used for Distance */
-		_rightMaster.configSensorTerm(SensorTerm.Sum0, FeedbackDevice.RemoteSensor0, Constants.kTimeoutMs);	// Feedback Device of Remote Talon
-		_rightMaster.configSensorTerm(SensorTerm.Sum1, FeedbackDevice.QuadEncoder, Constants.kTimeoutMs);	// Quadrature Encoder of current Talon
-		
-		/* Configure Sum [Sum of both QuadEncoders] to be used for Primary PID Index */
-		_rightMaster.configSelectedFeedbackSensor(	FeedbackDevice.SensorSum, 
-													Constants.PID_PRIMARY,
-													Constants.kTimeoutMs);
-		
-		/* Scale Feedback by 0.5 to half the sum of Distance */
-		_rightMaster.configSelectedFeedbackCoefficient(	0.5, 						// Coefficient
-														Constants.PID_PRIMARY,		// PID Slot of Source 
-														Constants.kTimeoutMs);		// Configuration Timeout
-		
-		/* Configure Remote Slot 1 [Pigeon IMU's Yaw] to be used for Auxiliary PID Index */
-		_rightMaster.configSelectedFeedbackSensor(	FeedbackDevice.RemoteSensor1,
-													Constants.PID_TURN,
-													Constants.kTimeoutMs);
-		
-		/* Scale the Feedback Sensor using a coefficient (Configured for 3600 units of resolution) */
-		_rightMaster.configSelectedFeedbackCoefficient(	Constants.kTurnTravelUnitsPerRotation / Constants.kPigeonUnitsPerRotation,
-														Constants.PID_TURN,
-														Constants.kTimeoutMs);
 		
 		/* Configure output and sensor direction */
 		_leftMaster.setInverted(false);
@@ -93,6 +44,7 @@ public class AutoMovement {
 		_rightMaster.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
 		_leftMaster.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
 
+	
 		/* Max out the peak output (for all modes).  
 		 * However you can limit the output of a given PID object with configClosedLoopPeakOutput().
 		 */
@@ -130,6 +82,8 @@ public class AutoMovement {
 		int closedLoopTimeMs = 1;
 		_rightMaster.configSetParameter(ParamEnum.ePIDLoopPeriod, closedLoopTimeMs, 0x00, 0, Constants.kTimeoutMs);
 		_rightMaster.configSetParameter(ParamEnum.ePIDLoopPeriod, closedLoopTimeMs, 0x00, 1, Constants.kTimeoutMs);
+		
+		
 
 		/* configAuxPIDPolarity(boolean invert, int timeoutMs)
 		 * false means talon's local output is PID0 + PID1, and other side Talon is PID0 - PID1
@@ -143,10 +97,98 @@ public class AutoMovement {
 		zeroSensors();
 		
 	}
+
+	public void motionMagicInit(int CruiseVelocity, int acceloration, int kSlotIdx, int kPIDLoopIdx ) {
+		
+		_rightMaster.selectProfileSlot(kSlotIdx, kPIDLoopIdx);
+		/* set acceleration and vcruise velocity - see documentation */
+		_rightMaster.configMotionCruiseVelocity(CruiseVelocity,Constants.kTimeoutMs );
+		_rightMaster.configMotionAcceleration(acceloration, Constants.kTimeoutMs);
+	
+	}
 	
 	public void autoMovementInit() {
+		/* Disable all motor controllers */
+		_rightMaster.set(ControlMode.PercentOutput, 0);
+		_leftMaster.set(ControlMode.PercentOutput, 0);
+		
+		/* Set Neutral Mode */
+		_leftMaster.setNeutralMode(NeutralMode.Brake);
+		_rightMaster.setNeutralMode(NeutralMode.Brake);
+	
+		
+		/** Feedback Sensor Configuration */
+		
+		/* Configure the left Talon's selected sensor as local QuadEncoder */
+		_leftMaster.configSelectedFeedbackSensor(	FeedbackDevice.QuadEncoder,				// Local Feedback Source
+													Constants.PID_PRIMARY,					// PID Slot for Source [0, 1]
+													Constants.kTimeoutMs);					// Configuration Timeout
+
+		/* Configure the Remote Talon's selected sensor as a remote sensor for the right Talon */
+		_rightMaster.configRemoteFeedbackFilter(_leftMaster.getDeviceID(),					// Device ID of Source
+												RemoteSensorSource.TalonSRX_SelectedSensor,	// Remote Feedback Source
+												Constants.REMOTE_0,							// Source number [0, 1]
+					
+												
+												Constants.kTimeoutMs);						// Configuration Timeout
+		
+		/* Configure the Pigeon IMU to the other Remote Slot on the Right Talon */
+		_rightMaster.configRemoteFeedbackFilter(_pidgey.getDeviceID(),
+												RemoteSensorSource.Pigeon_Yaw,
+												Constants.REMOTE_1,	
+												Constants.kTimeoutMs);
+		
+		/* Setup Sum signal to be used for Distance */
+		_rightMaster.configSensorTerm(SensorTerm.Sum0, FeedbackDevice.RemoteSensor0, Constants.kTimeoutMs);	// Feedback Device of Remote Talon
+		_rightMaster.configSensorTerm(SensorTerm.Sum1, FeedbackDevice.QuadEncoder, Constants.kTimeoutMs);	// Quadrature Encoder of current Talon
+		
+		/* Configure Sum [Sum of both QuadEncoders] to be used for Primary PID Index */
+		_rightMaster.configSelectedFeedbackSensor(	FeedbackDevice.SensorSum, 
+													Constants.PID_PRIMARY,
+													Constants.kTimeoutMs);
+		
+		
+		
+		/* Scale Feedback by 0.5 to half the sum of Distance */
+		_rightMaster.configSelectedFeedbackCoefficient(	0.5, 						// Coefficient
+														Constants.PID_PRIMARY,		// PID Slot of Source 
+														Constants.kTimeoutMs);		// Configuration Timeout
+		
+		/* Configure Remote Slot 1 [Pigeon IMU's Yaw] to be used for Auxiliary PID Index */
+		_rightMaster.configSelectedFeedbackSensor(	FeedbackDevice.RemoteSensor1,
+													Constants.PID_TURN,
+													Constants.kTimeoutMs);
+		
+		
+		/* Scale the Feedback Sensor using a coefficient (Configured for 3600 units of resolution) */
+		_rightMaster.configSelectedFeedbackCoefficient(	Constants.kTurnTravelUnitsPerRotation / Constants.kPigeonUnitsPerRotation,
+														Constants.PID_TURN,
+														Constants.kTimeoutMs);
 		
 	}
+	
+	public void setSetpoints() {
+		
+		
+	}
+		
+
+	
+	public void autoPeriodicSetPoint(	double postion, double turnYaw) {
+		/* Gamepad processing */
+		double forward = -postion;
+		double turn = turnYaw;
+				
+		
+			/* Calculate targets from gamepad inputs */
+			double target_sensorUnits = forward * Constants.kSensorUnitsPerRotation * Constants.kRotationsToTravel;
+			double target_turn = _targetAngle;
+			
+			/* Configured for Position Closed loop on Quad Encoders' Sum and Auxiliary PID on Pigeon's Yaw */
+			_rightMaster.set(ControlMode.MotionMagic, target_sensorUnits, DemandType.AuxPID, target_turn);
+			_leftMaster.follow(_rightMaster, FollowerType.AuxOutput1);
+		}
+
 	
 	
 	
