@@ -18,7 +18,7 @@ public class AutoMovement {
 	// hardware implementation all pins are theortical
 	// could flexable add more tallons 
 	// I am aasumeing that the driveTrain is in a tank format 
-	TalonSRX _leftMaster = new TalonSRX(2);
+	TalonSRX _leftFollower = new TalonSRX(2);
 	TalonSRX _rightMaster = new TalonSRX(1);
 	PigeonIMU _pidgey = new PigeonIMU(3);
 
@@ -31,20 +31,20 @@ public class AutoMovement {
 	public AutoMovement() {
 
 		/* Configure output and sensor direction */
-		_leftMaster.setInverted(false);
-		_leftMaster.setSensorPhase(true);
+		_leftFollower.setInverted(false);
+		_leftFollower.setSensorPhase(true);
 		_rightMaster.setInverted(true);
 		_rightMaster.setSensorPhase(true);
 
 		_rightMaster.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
-		_leftMaster.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
+		_leftFollower.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
 
 		/*
 		 * Max out the peak output (for all modes). However you can limit the output of
 		 * a given PID object with configClosedLoopPeakOutput().
 		 */
-		_leftMaster.configPeakOutputForward(+1.0, Constants.kTimeoutMs);
-		_leftMaster.configPeakOutputReverse(-1.0, Constants.kTimeoutMs);
+		_leftFollower.configPeakOutputForward(+1.0, Constants.kTimeoutMs);
+		_leftFollower.configPeakOutputReverse(-1.0, Constants.kTimeoutMs);
 		
 		_rightMaster.configPeakOutputForward(+1.0, Constants.kTimeoutMs);
 		_rightMaster.configPeakOutputReverse(-1.0, Constants.kTimeoutMs);
@@ -109,10 +109,10 @@ public class AutoMovement {
 	public void autoMovementInit() {
 		/* Disable all motor controllers */
 		_rightMaster.set(ControlMode.PercentOutput, 0);
-		_leftMaster.set(ControlMode.PercentOutput, 0);
+		_leftFollower.set(ControlMode.PercentOutput, 0);
 
 		/* Set Neutral Mode */
-		_leftMaster.setNeutralMode(NeutralMode.Brake);
+		_leftFollower.setNeutralMode(NeutralMode.Brake);
 		_rightMaster.setNeutralMode(NeutralMode.Brake);
 		
 		
@@ -120,7 +120,7 @@ public class AutoMovement {
 		/** Feedback Sensor Configuration */
 
 		/* Configure the left Talon's selected sensor as local QuadEncoder */
-		_leftMaster.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, // Local Feedback Source
+		_leftFollower.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, // Local Feedback Source
 				Constants.PID_PRIMARY, // PID Slot for Source [0, 1]
 				Constants.kTimeoutMs); // Configuration Timeout
 
@@ -128,7 +128,7 @@ public class AutoMovement {
 		 * Configure the Remote Talon's selected sensor as a remote sensor for the right
 		 * Talon
 		 */
-		_rightMaster.configRemoteFeedbackFilter(_leftMaster.getDeviceID(), // Device ID of Source
+		_rightMaster.configRemoteFeedbackFilter(_leftFollower.getDeviceID(), // Device ID of Source
 				RemoteSensorSource.TalonSRX_SelectedSensor, // Remote Feedback Source
 				Constants.REMOTE_0, // Source number [0, 1]
 				Constants.kTimeoutMs); // Configuration Timeout
@@ -150,10 +150,6 @@ public class AutoMovement {
 																											// current
 																											// Talon
 
-		
-		
-		
-		
 		/* Configure Sum [Sum of both QuadEncoders] to be used for Primary PID Index */
 		_rightMaster.configSelectedFeedbackSensor(FeedbackDevice.SensorSum, Constants.PID_PRIMARY,
 				Constants.kTimeoutMs);
@@ -212,12 +208,12 @@ public class AutoMovement {
 		 * on Pigeon's Yaw
 		 */
 		_rightMaster.set(ControlMode.MotionMagic, target_sensorUnits, DemandType.AuxPID, target_turn);
-		_leftMaster.follow(_rightMaster, FollowerType.AuxOutput1);
+		_leftFollower.follow(_rightMaster, FollowerType.AuxOutput1);
 	}
 
 	/** Zeroes all sensors, Both Pigeon and Talons */
 	void zeroSensors() {
-		_leftMaster.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
+		_leftFollower.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
 		_rightMaster.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
 		_pidgey.setYaw(0, Constants.kTimeoutMs);
 		_pidgey.setAccumZAngle(0, Constants.kTimeoutMs);
@@ -229,7 +225,7 @@ public class AutoMovement {
 	 * Loop
 	 */
 	void zeroDistance() {
-		_leftMaster.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
+		_leftFollower.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
 		_rightMaster.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
 		System.out.println("[QuadEncoders] All encoders are zeroed.\n");
 	}
