@@ -65,7 +65,10 @@ public class AutoMovement {
 
 	}
 	
-	public void configPosPIDF() {
+	/**
+	 * 
+	 */
+	public void configPosPIDF(double _kP, double _kI, double _kD, double _kF, double _kIzone, double _kPeakOutput)) {
 		// to do change kp gains to motuion porofile 
 		/* FPID Gains for distance servo */
 		_rightMaster.config_kP(Constants.kSlot_Distanc, Constants.kGains_Distanc.kP, Constants.kTimeoutMs);
@@ -82,16 +85,16 @@ public class AutoMovement {
 	/**
 	 * Angle pidf is aux pid on the auxilarry pid slot
 	 *  */
-	public void configAnglePIDF() {
+	public void configAnglePIDF(double _kP, double _kI, double _kD, double _kF, double _kIzone, double _kPeakOutput)) {
 		/* FPID Gains for turn servo */
-		_rightMaster.config_kP(Constants.kSlot_Turning, Constants.kGains_Turning.kP, Constants.kTimeoutMs);
-		_rightMaster.config_kI(Constants.kSlot_Turning, Constants.kGains_Turning.kI, Constants.kTimeoutMs);
-		_rightMaster.config_kD(Constants.kSlot_Turning, Constants.kGains_Turning.kD, Constants.kTimeoutMs);
-		_rightMaster.config_kF(Constants.kSlot_Turning, Constants.kGains_Turning.kF, Constants.kTimeoutMs);
-		_rightMaster.config_IntegralZone(Constants.kSlot_Turning, (int) Constants.kGains_Turning.kIzone,
+		_rightMaster.config_kP(Constants.kSlot_Turning, _kP, Constants.kTimeoutMs);
+		_rightMaster.config_kI(Constants.kSlot_Turning, _kI, Constants.kTimeoutMs);
+		_rightMaster.config_kD(Constants.kSlot_Turning, _kD, Constants.kTimeoutMs);
+		_rightMaster.config_kF(Constants.kSlot_Turning, _kF, Constants.kTimeoutMs);
+		_rightMaster.config_IntegralZone(Constants.kSlot_Turning, (int) _kIzone,
 				Constants.kTimeoutMs);
 		
-		_rightMaster.configClosedLoopPeakOutput(Constants.kSlot_Turning, Constants.kGains_Turning.kPeakOutput,Constants.kTimeoutMs);
+		_rightMaster.configClosedLoopPeakOutput(Constants.kSlot_Turning, _kPeakOutput,Constants.kTimeoutMs);
 
 		
 	}
