@@ -49,6 +49,8 @@ public class AutoMovement {
 		_rightMaster.configRemoteFeedbackFilter(_leftMaster.getDeviceID(),					// Device ID of Source
 												RemoteSensorSource.TalonSRX_SelectedSensor,	// Remote Feedback Source
 												Constants.REMOTE_0,							// Source number [0, 1]
+					
+												
 												Constants.kTimeoutMs);						// Configuration Timeout
 		
 		/* Configure the Pigeon IMU to the other Remote Slot on the Right Talon */
@@ -87,13 +89,7 @@ public class AutoMovement {
 		_rightMaster.setInverted(true);
 		_rightMaster.setSensorPhase(true);
 		
-		/* Set status frame periods to ensure we don't have stale data */
-		_rightMaster.setStatusFramePeriod(StatusFrame.Status_12_Feedback1, 20, Constants.kTimeoutMs);
-		_rightMaster.setStatusFramePeriod(StatusFrame.Status_13_Base_PIDF0, 20, Constants.kTimeoutMs);
-		_rightMaster.setStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 20, Constants.kTimeoutMs);
-		_leftMaster.setStatusFramePeriod(StatusFrame.Status_2_Feedback0, 5, Constants.kTimeoutMs);
-
-		/* Configure neutral deadband */
+		
 		_rightMaster.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
 		_leftMaster.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
 
@@ -102,6 +98,7 @@ public class AutoMovement {
 		 */
 		_leftMaster.configPeakOutputForward(+1.0, Constants.kTimeoutMs);
 		_leftMaster.configPeakOutputReverse(-1.0, Constants.kTimeoutMs);
+		
 		_rightMaster.configPeakOutputForward(+1.0, Constants.kTimeoutMs);
 		_rightMaster.configPeakOutputReverse(-1.0, Constants.kTimeoutMs);
 
@@ -121,6 +118,9 @@ public class AutoMovement {
 		_rightMaster.config_IntegralZone(Constants.kSlot_Turning, (int)Constants.kGains_Turning.kIzone, Constants.kTimeoutMs);
 		_rightMaster.configClosedLoopPeakOutput(Constants.kSlot_Turning, Constants.kGains_Turning.kPeakOutput, Constants.kTimeoutMs);
 			
+		
+		
+		
 		/* 1ms per loop.  PID loop can be slowed down if need be.
 		 * For example,
 		 * - if sensor updates are too slow
@@ -147,5 +147,23 @@ public class AutoMovement {
 	public void autoMovementInit() {
 		
 	}
-
+	
+	
+	
+	/** Zeroes all sensors, Both Pigeon and Talons */
+	void zeroSensors() {
+		_leftMaster.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
+		_rightMaster.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
+		_pidgey.setYaw(0, Constants.kTimeoutMs);
+		_pidgey.setAccumZAngle(0, Constants.kTimeoutMs);
+		System.out.println("[Sensors] All sensors are zeroed.\n");
+	}
+	
+	/** Zeroes QuadEncoders, used to reset Position when performing Position Closed Loop */
+	void zeroDistance(){
+		_leftMaster.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
+		_rightMaster.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
+		System.out.println("[QuadEncoders] All encoders are zeroed.\n");
+	}
+	
 }
