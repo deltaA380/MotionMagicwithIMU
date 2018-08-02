@@ -28,14 +28,21 @@ public class AutoMovement {
 	double _targetAngle = 0;
 	double postion =0;
 
-	public AutoMovement() {
+	/**
+	 * @param leftInvert
+	 * @param leftSensorPhase
+	 * @param rightInverted
+	 * @param rightSensorPhase
+	 */
+	public AutoMovement(boolean leftInvert, boolean leftSensorPhase, boolean rightInverted, boolean rightSensorPhase) {
 
 		/* Configure output and sensor direction */
-		_leftFollower.setInverted(false);
-		_leftFollower.setSensorPhase(true);
-		_rightMaster.setInverted(true);
-		_rightMaster.setSensorPhase(true);
+		_leftFollower.setInverted(leftInvert);
+		_leftFollower.setSensorPhase(leftSensorPhase);
+		_rightMaster.setInverted(rightInverted);
+		_rightMaster.setSensorPhase(rightSensorPhase);
 
+		
 		_rightMaster.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
 		_leftFollower.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
 
@@ -49,8 +56,9 @@ public class AutoMovement {
 		_rightMaster.configPeakOutputForward(+1.0, Constants.kTimeoutMs);
 		_rightMaster.configPeakOutputReverse(-1.0, Constants.kTimeoutMs);
 
-		
-		
+	}
+	
+	public void configPosPIDF() {
 		// to do change kp gains to motuion porofile 
 		/* FPID Gains for distance servo */
 		_rightMaster.config_kP(Constants.kSlot_Distanc, Constants.kGains_Distanc.kP, Constants.kTimeoutMs);
@@ -61,7 +69,10 @@ public class AutoMovement {
 				Constants.kTimeoutMs);
 		_rightMaster.configClosedLoopPeakOutput(Constants.kSlot_Distanc, Constants.kGains_Distanc.kPeakOutput,
 				Constants.kTimeoutMs);
+		
+	}
 
+	public void configAnglePIDF() {
 		/* FPID Gains for turn servo */
 		_rightMaster.config_kP(Constants.kSlot_Turning, Constants.kGains_Turning.kP, Constants.kTimeoutMs);
 		_rightMaster.config_kI(Constants.kSlot_Turning, Constants.kGains_Turning.kI, Constants.kTimeoutMs);
@@ -70,9 +81,12 @@ public class AutoMovement {
 		_rightMaster.config_IntegralZone(Constants.kSlot_Turning, (int) Constants.kGains_Turning.kIzone,
 				Constants.kTimeoutMs);
 		
-		_rightMaster.configClosedLoopPeakOutput(Constants.kSlot_Turning, Constants.kGains_Turning.kPeakOutput,
-				Constants.kTimeoutMs);
+		_rightMaster.configClosedLoopPeakOutput(Constants.kSlot_Turning, Constants.kGains_Turning.kPeakOutput,Constants.kTimeoutMs);
 
+		
+	}
+	
+	public void configLoopPeramiters(boolean auxPidPolarity) {
 		/*
 		 * 1ms per loop. PID loop can be slowed down if need be. For example, - if
 		 * sensor updates are too slow - sensor deltas are very small per update, so
@@ -89,11 +103,16 @@ public class AutoMovement {
 		 * output is PID0 + PID1, and other side Talon is PID0 - PID1 true means talon's
 		 * local output is PID0 - PID1, and other side Talon is PID0 + PID1
 		 */
-		_rightMaster.configAuxPIDPolarity(false, Constants.kTimeoutMs);
+		_rightMaster.configAuxPIDPolarity(auxPidPolarity, Constants.kTimeoutMs);
 
 
 	}
-
+	/**
+	 * @param CruiseVelocity
+	 * @param acceloration
+	 * @param kSlotIdx
+	 * @param kPIDLoopIdx
+	 */
 	public void motionMagicInit(int CruiseVelocity, int acceloration, int kSlotIdx, int kPIDLoopIdx) {
 
 		_rightMaster.selectProfileSlot(kSlotIdx, kPIDLoopIdx);
@@ -104,6 +123,9 @@ public class AutoMovement {
 	}
 
 	/**
+	 * inig loop that sets up all modes 
+	 * 
+	 * right useses the left encoder for postion feedback data 
 	 * 
 	 */
 	public void autoMovementInit() {
@@ -114,8 +136,6 @@ public class AutoMovement {
 		/* Set Neutral Mode */
 		_leftFollower.setNeutralMode(NeutralMode.Brake);
 		_rightMaster.setNeutralMode(NeutralMode.Brake);
-		
-		
 
 		/** Feedback Sensor Configuration */
 
@@ -197,12 +217,10 @@ public class AutoMovement {
 	 * manGages motion magic during auto periood
 	 */
 	public void autoPeriodicSetPoint() {
-	
 
 		/* Calculate targets from gamepad inputs */
 		double target_sensorUnits = postion * Constants.kSensorUnitsPerRotation * Constants.kRotationsToTravel;
 		double target_turn = _targetAngle;
-
 		/*
 		 * Configured for motion magic on Quad Encoders' Sum and Auxiliary PID
 		 * on Pigeon's Yaw
