@@ -48,24 +48,7 @@ public class Robot extends IterativeRobot {
 	}
 	
 	
-	/** Deadband 5 percent, used on the gamepad */
-	double Deadband(double value) {
-		/* Upper deadband */
-		if (value >= +0.05) 
-			return value;
-		
-		/* Lower deadband */
-		if (value <= -0.05)
-			return value;
-		
-		/* Outside deadband */
-		return 0;
-	}
+
+
 	
-	/** Gets all buttons from gamepad */
-	void getButtons(boolean[] btns, Joystick gamepad) {
-		for (int i = 1; i < Constants.kNumButtonsPlusOne; ++i) {
-			btns[i] = gamepad.getRawButton(i);
-		}
-	}
 }
