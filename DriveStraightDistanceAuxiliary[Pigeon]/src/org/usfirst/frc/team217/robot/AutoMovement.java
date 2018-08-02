@@ -13,6 +13,11 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 
+/**
+ * @author walsl
+ * methods to implement for motion magic plus angle pid control loop on 
+ * on the talon srx 
+ */
 public class AutoMovement {
 	
 	// hardware implementation all pins are theortical
@@ -20,13 +25,12 @@ public class AutoMovement {
 	// I am aasumeing that the driveTrain is in a tank format 
 	TalonSRX _leftFollower = new TalonSRX(2);
 	TalonSRX _rightMaster = new TalonSRX(1);
-	PigeonIMU _pidgey = new PigeonIMU(3);
+	PigeonIMU _pidgey ;
 
 	/** Tracking variables */
 	boolean _firstCall = false;
 	boolean _state = false;
-	double _targetAngle = 0;
-	double postion =0;
+	double _robotTargetAngle, robotPostion;
 
 	/**
 	 * @param leftInvert
@@ -34,8 +38,11 @@ public class AutoMovement {
 	 * @param rightInverted
 	 * @param rightSensorPhase
 	 */
-	public AutoMovement(boolean leftInvert, boolean leftSensorPhase, boolean rightInverted, boolean rightSensorPhase) {
-
+	public AutoMovement(boolean leftInvert, boolean leftSensorPhase, boolean rightInverted, boolean rightSensorPhase, int imuID) {
+		
+		_robotTargetAngle = 0;
+		double postion =0;
+		_pidgey = new PigeonIMU(imuID);
 		/* Configure output and sensor direction */
 		_leftFollower.setInverted(leftInvert);
 		_leftFollower.setSensorPhase(leftSensorPhase);
@@ -72,6 +79,9 @@ public class AutoMovement {
 		
 	}
 
+	/**
+	 * Angle pidf is aux pid on the auxilarry pid slot
+	 *  */
 	public void configAnglePIDF() {
 		/* FPID Gains for turn servo */
 		_rightMaster.config_kP(Constants.kSlot_Turning, Constants.kGains_Turning.kP, Constants.kTimeoutMs);
@@ -86,23 +96,28 @@ public class AutoMovement {
 		
 	}
 	
-	public void configLoopPeramiters(boolean auxPidPolarity) {
-		/*
-		 * 1ms per loop. PID loop can be slowed down if need be. For example, - if
+	/**
+	 * @param auxPidPolarity
+	 *  * configAuxPIDPolarity(boolean invert, int timeoutMs) false means talon's local
+		 * output is PID0 + PID1, and other side Talon is PID0 - PID1 true means talon's
+		 * local output is PID0 - PID1, and other side Talon is PID0 + PID1
+	 * @param _closeLoppTimeMs
+	 * 
+	 * 	 * 1ms per loop. PID loop can be slowed down if need be. For example, - if
 		 * sensor updates are too slow - sensor deltas are very small per update, so
 		 * derivative error never gets large enough to be useful. - sensor movement is
 		 * very slow causing the derivative error to be near zero.
-		 */
-		int closedLoopTimeMs = 1;
+		 * 
+		 * 		
+		 * 
+	 */
+	public void configLoopPeramiters(boolean auxPidPolarity, int _closeLoppTimeMs) {
+
+		int closedLoopTimeMs = _closeLoppTimeMs;
 		
 		_rightMaster.configSetParameter(ParamEnum.ePIDLoopPeriod, closedLoopTimeMs, 0x00, 0, Constants.kTimeoutMs);
 		_rightMaster.configSetParameter(ParamEnum.ePIDLoopPeriod, closedLoopTimeMs, 0x00, 1, Constants.kTimeoutMs);
 
-		/*
-		 * configAuxPIDPolarity(boolean invert, int timeoutMs) false means talon's local
-		 * output is PID0 + PID1, and other side Talon is PID0 - PID1 true means talon's
-		 * local output is PID0 - PID1, and other side Talon is PID0 + PID1
-		 */
 		_rightMaster.configAuxPIDPolarity(auxPidPolarity, Constants.kTimeoutMs);
 
 
@@ -207,8 +222,8 @@ public class AutoMovement {
 	 * @param turnYaw
 	 */
 	public void setSetpoints(double _postion, double turnYaw) {
-		_targetAngle= turnYaw;
-		postion = _postion;
+		_robotTargetAngle= turnYaw;
+		robotPostion = _postion;
 	}
 
 	
@@ -219,8 +234,8 @@ public class AutoMovement {
 	public void autoPeriodicSetPoint() {
 
 		/* Calculate targets from gamepad inputs */
-		double target_sensorUnits = postion * Constants.kSensorUnitsPerRotation * Constants.kRotationsToTravel;
-		double target_turn = _targetAngle;
+		double target_sensorUnits = robotPostion * Constants.kSensorUnitsPerRotation * Constants.kRotationsToTravel;
+		double target_turn = _robotTargetAngle;
 		/*
 		 * Configured for motion magic on Quad Encoders' Sum and Auxiliary PID
 		 * on Pigeon's Yaw
