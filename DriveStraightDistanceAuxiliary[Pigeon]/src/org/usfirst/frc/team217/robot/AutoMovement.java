@@ -73,6 +73,8 @@ public class AutoMovement {
 		_rightMaster.config_kP(Constants.kSlot_Distanc, Constants.kGains_Distanc.kP, Constants.kTimeoutMs);
 		_rightMaster.config_kI(Constants.kSlot_Distanc, Constants.kGains_Distanc.kI, Constants.kTimeoutMs);
 		_rightMaster.config_kD(Constants.kSlot_Distanc, Constants.kGains_Distanc.kD, Constants.kTimeoutMs);
+		
+		// TODO make sure to understand how to set kf constant 
 		_rightMaster.config_kF(Constants.kSlot_Distanc, Constants.kGains_Distanc.kF, Constants.kTimeoutMs);
 		_rightMaster.config_IntegralZone(Constants.kSlot_Distanc, (int) Constants.kGains_Distanc.kIzone,
 				Constants.kTimeoutMs);
