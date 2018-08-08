@@ -30,11 +30,15 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 
 public class Robot extends IterativeRobot {
-
+	AutoMovement auto;
 
 	@Override
 	public void robotInit() {
-		/* Not in use */
+		// check that your set up is correct
+		auto = new AutoMovement(false, false, false, false, 0);
+		auto.configAnglePIDF(_kP, _kI, _kD, _kF, _kIzone, _kPeakOutput);
+		auto.configPosPIDF(_kP, _kI, _kD, _kF, _kIzone, _kPeakOutput);
+		
 	}
 
 	@Override
@@ -42,9 +46,29 @@ public class Robot extends IterativeRobot {
 		
 	}
 	
+
+	
 	@Override
 	public void teleopPeriodic() {
 	
+	}
+	
+	/* (non-Javadoc)
+	 * @see edu.wpi.first.wpilibj.IterativeRobotBase#testInit()
+	 */
+	public void testInit() {
+		auto.autoMovementInit();
+		auto.motionMagicInit(CruiseVelocity, acceloration, kSlotIdx, kPIDLoopIdx);
+		auto.setSetpoints(_postion, turnYaw);
+		
+		
+	}
+	@Override
+	public void testPeriodic() {
+		
+		auto.autoPeriodicSetPoint();
+		
+		
 	}
 	
 	

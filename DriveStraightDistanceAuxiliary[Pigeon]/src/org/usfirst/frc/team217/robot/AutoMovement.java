@@ -12,6 +12,8 @@ import com.ctre.phoenix.motorcontrol.StatusFrame;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 /**
  * @author walsl methods to implement for motion magic plus angle pid control
  *         loop on on the talon srx
@@ -175,7 +177,7 @@ public class AutoMovement {
 
 		/* Configure the Pigeon IMU to the other Remote Slot on the Right Talon */
 		_rightMaster.configRemoteFeedbackFilter(_pidgey.getDeviceID(), RemoteSensorSource.Pigeon_Yaw,
-				Constants.REMOTE_1, Constants.kTimeoutMs);
+			1, Constants.kTimeoutMs);
 
 		/* Setup Sum signal to be used for Distance */
 		_rightMaster.configSensorTerm(SensorTerm.Sum0, FeedbackDevice.RemoteSensor0, Constants.kTimeoutMs); // Feedback
@@ -226,6 +228,7 @@ public class AutoMovement {
 		robotPostion = _postion;
 	}
 
+	
 	/**
 	 * manGages motion magic during auto periood
 	 */
