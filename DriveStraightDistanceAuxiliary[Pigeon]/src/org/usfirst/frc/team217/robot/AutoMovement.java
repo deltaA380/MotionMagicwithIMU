@@ -1,5 +1,7 @@
 package org.usfirst.frc.team217.robot;
 
+import org.usfirst.frc.team3630.robot.Consts;
+
 import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
@@ -23,14 +25,14 @@ public class AutoMovement {
 	// hardware implementation all pins are theortical
 	// could flexable add more tallons
 	// I am aasumeing that the driveTrain is in a tank format
-	TalonSRX _leftFollower = new TalonSRX(2);
-	TalonSRX _rightMaster = new TalonSRX(1);
-	PigeonIMU _pidgey;
+	TalonSRX leftFollower = new TalonSRX(2);
+	TalonSRX rightMaster = new TalonSRX(1);
+	PigeonIMU pidgey;
 
 	/** Tracking variables */
 	boolean _firstCall = false;
 	boolean _state = false;
-	double _robotTargetAngle, robotPostion;
+	double robotTargetAngle, robotPostion;
 
 	/**
 	 * @param leftInvert
@@ -41,27 +43,27 @@ public class AutoMovement {
 	public AutoMovement(boolean leftInvert, boolean leftSensorPhase, boolean rightInverted, boolean rightSensorPhase,
 			int imuID) {
 
-		_robotTargetAngle = 0;
-		double postion = 0;
-		_pidgey = new PigeonIMU(imuID);
+		robotTargetAngle = 0;
+		 robotPostion = 0;
+		pidgey = new PigeonIMU(imuID);
 		/* Configure output and sensor direction */
-		_leftFollower.setInverted(leftInvert);
-		_leftFollower.setSensorPhase(leftSensorPhase);
-		_rightMaster.setInverted(rightInverted);
-		_rightMaster.setSensorPhase(rightSensorPhase);
+		leftFollower.setInverted(leftInvert);
+		leftFollower.setSensorPhase(leftSensorPhase);
+		rightMaster.setInverted(rightInverted);
+		rightMaster.setSensorPhase(rightSensorPhase);
 
-		_rightMaster.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
-		_leftFollower.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
+		rightMaster.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
+		leftFollower.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
 
 		/*
 		 * Max out the peak output (for all modes). However you can limit the output of
 		 * a given PID object with configClosedLoopPeakOutput().
 		 */
-		_leftFollower.configPeakOutputForward(+1.0, Constants.kTimeoutMs);
-		_leftFollower.configPeakOutputReverse(-1.0, Constants.kTimeoutMs);
+		leftFollower.configPeakOutputForward(+1.0, Constants.kTimeoutMs);
+		leftFollower.configPeakOutputReverse(-1.0, Constants.kTimeoutMs);
 
-		_rightMaster.configPeakOutputForward(+1.0, Constants.kTimeoutMs);
-		_rightMaster.configPeakOutputReverse(-1.0, Constants.kTimeoutMs);
+		rightMaster.configPeakOutputForward(+1.0, Constants.kTimeoutMs);
+		rightMaster.configPeakOutputReverse(-1.0, Constants.kTimeoutMs);
 
 	}
 
@@ -76,13 +78,13 @@ public class AutoMovement {
 	public void configPosPIDF(double _kP, double _kI, double _kD, double _kF, double _kIzone, double _kPeakOutput) {
 		// to do change kp gains to motuion porofile
 		/* FPID Gains for distance servo */
-		_rightMaster.config_kP(Constants.kSlot_Distanc, _kP, Constants.kTimeoutMs);
-		_rightMaster.config_kI(Constants.kSlot_Distanc, _kI, Constants.kTimeoutMs);
-		_rightMaster.config_kD(Constants.kSlot_Distanc, _kD, Constants.kTimeoutMs);
+		rightMaster.config_kP(Constants.kSlot_Distanc, _kP, Constants.kTimeoutMs);
+		rightMaster.config_kI(Constants.kSlot_Distanc, _kI, Constants.kTimeoutMs);
+		rightMaster.config_kD(Constants.kSlot_Distanc, _kD, Constants.kTimeoutMs);
 
-		_rightMaster.config_kF(Constants.kSlot_Distanc, _kF, Constants.kTimeoutMs);
-		_rightMaster.config_IntegralZone(Constants.kSlot_Distanc, (int) _kIzone, Constants.kTimeoutMs);
-		_rightMaster.configClosedLoopPeakOutput(Constants.kSlot_Distanc, _kPeakOutput, Constants.kTimeoutMs);
+		rightMaster.config_kF(Constants.kSlot_Distanc, _kF, Constants.kTimeoutMs);
+		rightMaster.config_IntegralZone(Constants.kSlot_Distanc, (int) _kIzone, Constants.kTimeoutMs);
+		rightMaster.configClosedLoopPeakOutput(Constants.kSlot_Distanc, _kPeakOutput, Constants.kTimeoutMs);
 
 	}
 
@@ -98,12 +100,12 @@ public class AutoMovement {
 	 */
 	public void configAnglePIDF(double _kP, double _kI, double _kD, double _kF, double _kIzone, double _kPeakOutput) {
 		/* FPID Gains for turn servo */
-		_rightMaster.config_kP(Constants.kSlot_Turning, _kP, Constants.kTimeoutMs);
-		_rightMaster.config_kI(Constants.kSlot_Turning, _kI, Constants.kTimeoutMs);
-		_rightMaster.config_kD(Constants.kSlot_Turning, _kD, Constants.kTimeoutMs);
-		_rightMaster.config_kF(Constants.kSlot_Turning, _kF, Constants.kTimeoutMs);
-		_rightMaster.config_IntegralZone(Constants.kSlot_Turning, (int) _kIzone, Constants.kTimeoutMs);
-		_rightMaster.configClosedLoopPeakOutput(Constants.kSlot_Turning, _kPeakOutput, Constants.kTimeoutMs);
+		rightMaster.config_kP(Constants.kSlot_Turning, _kP, Constants.kTimeoutMs);
+		rightMaster.config_kI(Constants.kSlot_Turning, _kI, Constants.kTimeoutMs);
+		rightMaster.config_kD(Constants.kSlot_Turning, _kD, Constants.kTimeoutMs);
+		rightMaster.config_kF(Constants.kSlot_Turning, _kF, Constants.kTimeoutMs);
+		rightMaster.config_IntegralZone(Constants.kSlot_Turning, (int) _kIzone, Constants.kTimeoutMs);
+		rightMaster.configClosedLoopPeakOutput(Constants.kSlot_Turning, _kPeakOutput, Constants.kTimeoutMs);
 	}
 
 	/**
@@ -123,9 +125,9 @@ public class AutoMovement {
 	public void configLoopPeramiters(boolean auxPidPolarity, int _closeLoppTimeMs) {
 
 		int closedLoopTimeMs = _closeLoppTimeMs;
-		_rightMaster.configSetParameter(ParamEnum.ePIDLoopPeriod, closedLoopTimeMs, 0x00, 0, Constants.kTimeoutMs);
-		_rightMaster.configSetParameter(ParamEnum.ePIDLoopPeriod, closedLoopTimeMs, 0x00, 1, Constants.kTimeoutMs);
-		_rightMaster.configAuxPIDPolarity(auxPidPolarity, Constants.kTimeoutMs);
+		rightMaster.configSetParameter(ParamEnum.ePIDLoopPeriod, closedLoopTimeMs, 0x00, 0, Constants.kTimeoutMs);
+		rightMaster.configSetParameter(ParamEnum.ePIDLoopPeriod, closedLoopTimeMs, 0x00, 1, Constants.kTimeoutMs);
+		rightMaster.configAuxPIDPolarity(auxPidPolarity, Constants.kTimeoutMs);
 
 	}
 
@@ -137,10 +139,10 @@ public class AutoMovement {
 	 */
 	public void motionMagicInit(int CruiseVelocity, int acceloration, int kSlotIdx, int kPIDLoopIdx) {
 
-		_rightMaster.selectProfileSlot(kSlotIdx, kPIDLoopIdx);
+		rightMaster.selectProfileSlot(kSlotIdx, kPIDLoopIdx);
 		/* set acceleration and vcruise velocity - see documentation */
-		_rightMaster.configMotionCruiseVelocity(CruiseVelocity, Constants.kTimeoutMs);
-		_rightMaster.configMotionAcceleration(acceloration, Constants.kTimeoutMs);
+		rightMaster.configMotionCruiseVelocity(CruiseVelocity, Constants.kTimeoutMs);
+		rightMaster.configMotionAcceleration(acceloration, Constants.kTimeoutMs);
 
 	}
 
@@ -152,17 +154,17 @@ public class AutoMovement {
 	 */
 	public void autoMovementInit() {
 		/* Disable all motor controllers */
-		_rightMaster.set(ControlMode.PercentOutput, 0);
-		_leftFollower.set(ControlMode.PercentOutput, 0);
+		rightMaster.set(ControlMode.PercentOutput, 0);
+		leftFollower.set(ControlMode.PercentOutput, 0);
 
 		/* Set Neutral Mode */
-		_leftFollower.setNeutralMode(NeutralMode.Brake);
-		_rightMaster.setNeutralMode(NeutralMode.Brake);
+		leftFollower.setNeutralMode(NeutralMode.Brake);
+		rightMaster.setNeutralMode(NeutralMode.Brake);
 
 		/** Feedback Sensor Configuration */
 
 		/* Configure the left Talon's selected sensor as local QuadEncoder */
-		_leftFollower.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, // Local Feedback Source
+		leftFollower.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, // Local Feedback Source
 				Constants.PID_PRIMARY, // PID Slot for Source [0, 1]
 				Constants.kTimeoutMs); // Configuration Timeout
 
@@ -170,46 +172,46 @@ public class AutoMovement {
 		 * Configure the Remote Talon's selected sensor as a remote sensor for the right
 		 * Talon
 		 */
-		_rightMaster.configRemoteFeedbackFilter(_leftFollower.getDeviceID(), // Device ID of Source
+		rightMaster.configRemoteFeedbackFilter(leftFollower.getDeviceID(), // Device ID of Source
 				RemoteSensorSource.TalonSRX_SelectedSensor, // Remote Feedback Source
 				Constants.REMOTE_0, // Source number [0, 1]
 				Constants.kTimeoutMs); // Configuration Timeout
 
 		/* Configure the Pigeon IMU to the other Remote Slot on the Right Talon */
-		_rightMaster.configRemoteFeedbackFilter(_pidgey.getDeviceID(), RemoteSensorSource.Pigeon_Yaw,
+		rightMaster.configRemoteFeedbackFilter(pidgey.getDeviceID(), RemoteSensorSource.Pigeon_Yaw,
 			1, Constants.kTimeoutMs);
 
 		/* Setup Sum signal to be used for Distance */
-		_rightMaster.configSensorTerm(SensorTerm.Sum0, FeedbackDevice.RemoteSensor0, Constants.kTimeoutMs); // Feedback
+		rightMaster.configSensorTerm(SensorTerm.Sum0, FeedbackDevice.RemoteSensor0, Constants.kTimeoutMs); // Feedback
 																											// Device of
 																											// Remote
 		// Talon
-		_rightMaster.configSensorTerm(SensorTerm.Sum1, FeedbackDevice.QuadEncoder, Constants.kTimeoutMs); // Quadrature
+		rightMaster.configSensorTerm(SensorTerm.Sum1, FeedbackDevice.QuadEncoder, Constants.kTimeoutMs); // Quadrature
 																											// Encoder
 																											// of
 																											// current
 																											// Talon
 
 		/* Configure Sum [Sum of both QuadEncoders] to be used for Primary PID Index */
-		_rightMaster.configSelectedFeedbackSensor(FeedbackDevice.SensorSum, Constants.PID_PRIMARY,
+		rightMaster.configSelectedFeedbackSensor(FeedbackDevice.SensorSum, Constants.PID_PRIMARY,
 				Constants.kTimeoutMs);
 
 		/* Scale Feedback by 0.5 to half the sum of Distance */
-		_rightMaster.configSelectedFeedbackCoefficient(0.5, // Coefficient
+		rightMaster.configSelectedFeedbackCoefficient(0.5, // Coefficient
 				Constants.PID_PRIMARY, // PID Slot of Source
 				Constants.kTimeoutMs); // Configuration Timeout
 
 		/*
 		 * Configure Remote Slot 1 [Pigeon IMU's Yaw] to be used for Auxiliary PID Index
 		 */
-		_rightMaster.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor1, Constants.PID_TURN,
+		rightMaster.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor1, Constants.PID_TURN,
 				Constants.kTimeoutMs);
 
 		/*
 		 * Scale the Feedback Sensor using a coefficient (Configured for 3600 units of
 		 * resolution)
 		 */
-		_rightMaster.configSelectedFeedbackCoefficient(
+		rightMaster.configSelectedFeedbackCoefficient(
 				Constants.kTurnTravelUnitsPerRotation / Constants.kPigeonUnitsPerRotation, Constants.PID_TURN,
 				Constants.kTimeoutMs);
 
@@ -218,13 +220,44 @@ public class AutoMovement {
 		zeroSensors();
 
 	}
+	
+	public void getDiaognostics() {
+		SmartDashboard.putNumber("leftsideTicks", getRotations(leftFollower));
+		SmartDashboard.putNumber("leftsideVelocity", getVelocity(leftFollower));
+	}
+	
 
 	/**
-	 * @param _postion
-	 * @param turnYaw
+	 * @param _talon
+	 * @return actual rrotation of talon in a rotation of the wheel
 	 */
+	public double getRotations(TalonSRX _talon) {
+			int ticksPerRotation = 0;
+		double distance_ticks = _talon.getSelectedSensorPosition(0);
+		double distance_rotations = distance_ticks / ticksPerRotation;
+		return distance_rotations;
+	}
+
+	public double getTicks(TalonSRX _talon) {
+		double distance_ticks = _talon.getSelectedSensorPosition(0);
+		return distance_ticks;
+
+	}
+
+	/**
+	 * @param _talon
+	 * @return velocity in in/ second. from native taon units
+	 */
+	public double getVelocity(TalonSRX _talon) {
+		int ticksPerRotation = 0;
+		double velocity_milliseconds = (double) _talon.getSelectedSensorVelocity(0) / ticksPerRotation;
+		double velocity_seconds = velocity_milliseconds * 10 * 6 * Math.PI * .0254;
+		return velocity_seconds;
+	}
+
+	
 	public void setSetpoints(double _postion, double turnYaw) {
-		_robotTargetAngle = turnYaw;
+		robotTargetAngle = turnYaw;
 		robotPostion = _postion;
 	}
 
@@ -234,30 +267,31 @@ public class AutoMovement {
 	 */
 	public void autoPeriodicSetPoint() {
 
-		// TODO need to make converstion from inches to encoder ticks
+		// TODO need to make converstion from inches to encoder ticks the setpoint unit for motion magic
 		double targetSesnorUnits = robotPostion * Constants.kSensorUnitsPerRotation * Constants.kRotationsToTravel;
-		double target_turn = _robotTargetAngle;
+		double target_turn = robotTargetAngle;
 		/*
 		 * Configured for motion magic on Quad Encoders' Sum and Auxiliary PID on
 		 * Pigeon's Yaw
 		 */
-		_rightMaster.set(ControlMode.MotionMagic, targetSesnorUnits, DemandType.AuxPID, target_turn);
-		_leftFollower.follow(_rightMaster, FollowerType.AuxOutput1);
+		rightMaster.set(ControlMode.MotionMagic, targetSesnorUnits, DemandType.AuxPID, target_turn);
+		leftFollower.follow(rightMaster, FollowerType.AuxOutput1);
+		
 	}
 
 	/** Zeroes all sensors, Both Pigeon and Talons */
 	public void zeroSensors() {
-		_leftFollower.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
-		_rightMaster.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
+		leftFollower.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
+		rightMaster.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
 
-		_pidgey.setYaw(0, Constants.kTimeoutMs);
-		_pidgey.setAccumZAngle(0, Constants.kTimeoutMs);
+		pidgey.setYaw(0, Constants.kTimeoutMs);
+		pidgey.setAccumZAngle(0, Constants.kTimeoutMs);
 		System.out.println("[Sensors] All sensors are zeroed.\n");
 	}
 
 	public void stopMotors() {
-		_rightMaster.set(ControlMode.PercentOutput, 0);
-		_leftFollower.set(ControlMode.PercentOutput, 0);
+		rightMaster.set(ControlMode.PercentOutput, 0);
+		leftFollower.set(ControlMode.PercentOutput, 0);
 
 	}
 
@@ -266,15 +300,14 @@ public class AutoMovement {
 	 * Loop
 	 */
 	public void zeroDistance() {
-		_leftFollower.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
-		_rightMaster.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
+		leftFollower.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
+		rightMaster.getSensorCollection().setQuadraturePosition(0, Constants.kTimeoutMs);
 		System.out.println("[QuadEncoders] All encoders are zeroed.\n");
 	}
 
 	public void zeroIMU() {
-
-		_pidgey.setYaw(0, Constants.kTimeoutMs);
-		_pidgey.setAccumZAngle(0, Constants.kTimeoutMs);
+		pidgey.setYaw(0, Constants.kTimeoutMs);
+		pidgey.setAccumZAngle(0, Constants.kTimeoutMs);
 		System.out.println("[Sensors] IMU is zeroed.\n");
 
 	}

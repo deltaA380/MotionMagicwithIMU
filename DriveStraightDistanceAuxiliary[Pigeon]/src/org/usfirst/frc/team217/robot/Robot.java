@@ -36,8 +36,9 @@ public class Robot extends IterativeRobot {
 	public void robotInit() {
 		// check that your set up is correct
 		auto = new AutoMovement(false, false, false, false, 0);
-		auto.configAnglePIDF(_kP, _kI, _kD, _kF, _kIzone, _kPeakOutput);
-		auto.configPosPIDF(_kP, _kI, _kD, _kF, _kIzone, _kPeakOutput);
+		// peramoitos in order _kP _kI _kD _kF _kIzone _kPeakOutput angle pid controller at aux pid sensor
+		auto.configAnglePIDF(1, 0, 0, 0, 0, 0);
+		auto.configPosPIDF(1, 0, 0, 0, 0, 0);
 		
 	}
 
@@ -58,7 +59,9 @@ public class Robot extends IterativeRobot {
 	 */
 	public void testInit() {
 		auto.autoMovementInit();
+		//CruiseVelocity, acceloration, kSlotIdx, kPIDLoopIdx)
 		auto.motionMagicInit(CruiseVelocity, acceloration, kSlotIdx, kPIDLoopIdx);
+		//_postion, turnYaw)
 		auto.setSetpoints(_postion, turnYaw);
 		
 		
